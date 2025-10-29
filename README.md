@@ -142,15 +142,32 @@ Confirmez le mot de passe:
 
 Le script effectue les opérations suivantes de manière automatique:
 
+### 0. Configuration réseau (optionnelle)
+- Détection automatique des interfaces réseau disponibles
+- Affichage de la configuration réseau actuelle
+- Configuration d'une IP statique avec :
+  - Support de Netplan (Debian 12+) et /etc/network/interfaces (Debian 11-)
+  - Configuration de l'adresse IP et du masque de sous-réseau
+  - Configuration de la passerelle par défaut
+  - Configuration des serveurs DNS (primaire et secondaire)
+  - Sauvegarde automatique de la configuration précédente
+  - Application immédiate de la nouvelle configuration
+
 ### 1. Vérifications préalables
 - Vérification des privilèges root
 - Vérification du système Debian
 - Configuration du mot de passe de la base de données
 
-### 2. Mise à jour du système
+### 2. Mise à jour complète du système
 ```bash
-apt update && apt upgrade -y
+apt update && apt upgrade -y && apt dist-upgrade -y
 ```
+- Mise à jour de la liste des paquets
+- Comptage et affichage du nombre de paquets à mettre à jour
+- Application de toutes les mises à jour disponibles
+- Mise à jour de distribution (dist-upgrade)
+- Nettoyage des paquets obsolètes
+- Détection si un redémarrage est nécessaire
 
 ### 3. Installation des prérequis
 - Apache2 (serveur web)
@@ -159,6 +176,7 @@ apt update && apt upgrade -y
   - php-mbstring, php-ldap, php-mysql
   - libapache2-mod-php
   - Et bien d'autres...
+- ipcalc (pour les calculs réseau)
 
 ### 4. Installation et sécurisation de MariaDB
 - Installation de MariaDB Server
