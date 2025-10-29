@@ -447,11 +447,11 @@ start_services() {
 }
 
 ################################################################################
-# Vérification de l'installation
+# Étape 9: Vérification de l'installation
 ################################################################################
 
 verify_installation() {
-    log "Vérification de l'installation..."
+    log "Étape 9/9: Vérification de l'installation..."
     
     # Vérification du statut des services
     if systemctl is-active --quiet zabbix-server; then
