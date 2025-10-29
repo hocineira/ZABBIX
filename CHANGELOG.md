@@ -31,6 +31,9 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 - **Configuration DNS (primaire et secondaire)**
 - **Sauvegarde automatique de la configuration réseau précédente**
 
+### Corrigé
+- **Retrait de php-imap** de la liste des dépendances (paquet problématique sur certaines versions de Debian)
+
 ### Sécurité
 - Sécurisation automatique de MariaDB
 - Demande de mot de passe sécurisé pour la base de données
