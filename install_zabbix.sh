@@ -295,7 +295,6 @@ install_prerequisites() {
         php-pear \
         php-imagick \
         php-bz2 \
-        php-imap \
         php-memcache \
         php-pspell \
         php-tidy \
