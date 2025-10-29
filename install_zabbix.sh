@@ -403,7 +403,7 @@ install_zabbix() {
 ################################################################################
 
 import_zabbix_schema() {
-    log "Étape 7/8: Importation du schéma de base de données Zabbix..."
+    log "Étape 7/9: Importation du schéma de base de données Zabbix..."
     
     zcat /usr/share/zabbix/sql-scripts/mysql/server.sql.gz | \
         mysql --default-character-set=utf8mb4 -uzabbix -p"$ZABBIX_DB_PASSWORD" zabbix \
