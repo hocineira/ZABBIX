@@ -284,6 +284,31 @@ Lors de la première connexion, l'assistant de configuration vous guidera:
 
 ### Problèmes courants
 
+#### 0. Problème de réseau après configuration
+
+```bash
+# Vérifier la configuration réseau
+ip addr show
+ip route show
+cat /etc/resolv.conf
+
+# Pour Netplan
+sudo netplan status
+sudo netplan apply
+
+# Pour interfaces
+sudo systemctl restart networking
+
+# Restaurer la configuration précédente (si nécessaire)
+# Pour Netplan
+sudo cp /etc/netplan/01-netcfg.yaml.backup.YYYYMMDD_HHMMSS /etc/netplan/01-netcfg.yaml
+sudo netplan apply
+
+# Pour interfaces
+sudo cp /etc/network/interfaces.backup.YYYYMMDD_HHMMSS /etc/network/interfaces
+sudo systemctl restart networking
+```
+
 #### 1. Le serveur Zabbix ne démarre pas
 
 ```bash
