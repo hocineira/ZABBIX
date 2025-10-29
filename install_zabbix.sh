@@ -54,6 +54,167 @@ check_debian() {
 }
 
 ################################################################################
+# Configuration réseau
+################################################################################
+
+detect_network_interface() {
+    # Détecte l'interface réseau principale (exclut loopback)
+    INTERFACES=$(ip -o link show | awk -F': ' '{print $2}' | grep -v "lo" | grep -v "@")
+    
+    if [ -z "$INTERFACES" ]; then
+        error "Aucune interface réseau détectée"
+    fi
+    
+    # Si plusieurs interfaces, demander à l'utilisateur
+    INTERFACE_COUNT=$(echo "$INTERFACES" | wc -l)
+    if [ "$INTERFACE_COUNT" -gt 1 ]; then
+        echo ""
+        echo "Interfaces réseau détectées:"
+        echo "$INTERFACES" | nl
+        read -p "Sélectionnez le numéro de l'interface à configurer: " INTERFACE_NUM
+        NETWORK_INTERFACE=$(echo "$INTERFACES" | sed -n "${INTERFACE_NUM}p")
+    else
+        NETWORK_INTERFACE=$(echo "$INTERFACES" | head -n 1)
+    fi
+    
+    info "Interface sélectionnée: $NETWORK_INTERFACE"
+}
+
+show_current_network_config() {
+    log "Configuration réseau actuelle:"
+    echo ""
+    ip addr show "$NETWORK_INTERFACE" | grep -E "inet |ether " || true
+    echo ""
+    echo "Passerelle actuelle:"
+    ip route | grep default || echo "Aucune passerelle configurée"
+    echo ""
+    echo "DNS actuels:"
+    cat /etc/resolv.conf | grep nameserver || echo "Aucun DNS configuré"
+    echo ""
+}
+
+configure_static_network() {
+    log "Configuration du réseau statique..."
+    
+    detect_network_interface
+    show_current_network_config
+    
+    echo ""
+    read -p "Voulez-vous configurer une IP statique? (o/N): " CONFIGURE_NETWORK
+    
+    if [[ ! "$CONFIGURE_NETWORK" =~ ^[oO]$ ]]; then
+        warning "Configuration réseau ignorée - continuant avec la configuration actuelle"
+        return 0
+    fi
+    
+    # Demander les informations réseau
+    read -p "Adresse IP statique (ex: 192.168.1.100): " STATIC_IP
+    read -p "Masque de sous-réseau (ex: 255.255.255.0 ou 24): " NETMASK
+    read -p "Passerelle (ex: 192.168.1.1): " GATEWAY
+    read -p "DNS primaire (ex: 8.8.8.8): " DNS1
+    read -p "DNS secondaire (ex: 8.8.4.4) [optionnel]: " DNS2
+    
+    # Validation basique
+    if [ -z "$STATIC_IP" ] || [ -z "$NETMASK" ] || [ -z "$GATEWAY" ] || [ -z "$DNS1" ]; then
+        error "Tous les champs obligatoires doivent être renseignés"
+    fi
+    
+    # Conversion du masque si nécessaire (255.255.255.0 -> 24)
+    if [[ "$NETMASK" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+        # Convertir le masque décimal en CIDR
+        CIDR=$(ipcalc "$STATIC_IP" "$NETMASK" 2>/dev/null | grep "Netmask:" | awk '{print $4}' || echo "24")
+        if [ -z "$CIDR" ]; then
+            CIDR="24"
+            warning "Impossible de convertir le masque, utilisation de /24 par défaut"
+        fi
+    else
+        CIDR="$NETMASK"
+    fi
+    
+    # Détecter le système de configuration réseau (Netplan ou interfaces)
+    if [ -d "/etc/netplan" ] && command -v netplan &> /dev/null; then
+        configure_netplan
+    else
+        configure_interfaces
+    fi
+    
+    log "Configuration réseau appliquée avec succès"
+    info "ATTENTION: La connexion réseau peut être interrompue momentanément"
+    
+    echo ""
+    read -p "Appuyez sur Entrée pour continuer..."
+}
+
+configure_netplan() {
+    log "Configuration via Netplan..."
+    
+    # Sauvegarde de la configuration actuelle
+    if [ -f /etc/netplan/01-netcfg.yaml ]; then
+        cp /etc/netplan/01-netcfg.yaml /etc/netplan/01-netcfg.yaml.backup.$(date +%Y%m%d_%H%M%S)
+    fi
+    
+    # Création du fichier Netplan
+    cat > /etc/netplan/01-netcfg.yaml <<EOF
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    $NETWORK_INTERFACE:
+      dhcp4: no
+      addresses:
+        - $STATIC_IP/$CIDR
+      routes:
+        - to: default
+          via: $GATEWAY
+      nameservers:
+        addresses:
+EOF
+    
+    echo "          - $DNS1" >> /etc/netplan/01-netcfg.yaml
+    if [ -n "$DNS2" ]; then
+        echo "          - $DNS2" >> /etc/netplan/01-netcfg.yaml
+    fi
+    
+    # Tester la configuration
+    netplan try --timeout 10 || error "Erreur lors de l'application de la configuration Netplan"
+    netplan apply
+    
+    log "Configuration Netplan appliquée"
+}
+
+configure_interfaces() {
+    log "Configuration via /etc/network/interfaces..."
+    
+    # Sauvegarde de la configuration actuelle
+    cp /etc/network/interfaces /etc/network/interfaces.backup.$(date +%Y%m%d_%H%M%S)
+    
+    # Configuration de l'interface
+    cat >> /etc/network/interfaces <<EOF
+
+# Configuration statique pour $NETWORK_INTERFACE
+auto $NETWORK_INTERFACE
+iface $NETWORK_INTERFACE inet static
+    address $STATIC_IP
+    netmask $NETMASK
+    gateway $GATEWAY
+    dns-nameservers $DNS1${DNS2:+ $DNS2}
+EOF
+    
+    # Configuration des DNS
+    cat > /etc/resolv.conf <<EOF
+nameserver $DNS1
+EOF
+    if [ -n "$DNS2" ]; then
+        echo "nameserver $DNS2" >> /etc/resolv.conf
+    fi
+    
+    # Redémarrage du service réseau
+    systemctl restart networking || /etc/init.d/networking restart
+    
+    log "Configuration réseau appliquée"
+}
+
+################################################################################
 # Configuration
 ################################################################################
 
