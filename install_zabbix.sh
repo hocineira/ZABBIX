@@ -427,14 +427,18 @@ install_zabbix() {
 import_zabbix_schema() {
     log "Étape 7/9: Importation du schéma de base de données Zabbix..."
     
+    info "Import du schéma (cela peut prendre plusieurs minutes)..."
     zcat /usr/share/zabbix/sql-scripts/mysql/server.sql.gz | \
         mysql --default-character-set=utf8mb4 -uzabbix -p"$ZABBIX_DB_PASSWORD" zabbix \
-        >> "$LOG_FILE" 2>&1 || error "Échec de l'importation du schéma Zabbix"
+        >> "$LOG_FILE" 2>&1
+    
+    if [ $? -ne 0 ]; then
+        error "Échec de l'importation du schéma Zabbix. Vérifiez le mot de passe et les logs."
+    fi
     
     # Désactivation de log_bin_trust_function_creators
-    mysql -u root <<-EOF >> "$LOG_FILE" 2>&1
-		SET GLOBAL log_bin_trust_function_creators = 0;
-	EOF
+    info "Finalisation de la configuration..."
+    mysql -u root -e "SET GLOBAL log_bin_trust_function_creators = 0;" 2>> "$LOG_FILE" || warning "Désactivation log_bin_trust_function_creators échouée"
     
     log "Schéma de base de données importé avec succès"
 }
@@ -443,7 +447,10 @@ configure_zabbix_server() {
     log "Configuration du serveur Zabbix..."
     
     # Sauvegarde du fichier de configuration original
-    cp /etc/zabbix/zabbix_server.conf /etc/zabbix/zabbix_server.conf.backup
+    if [ -f /etc/zabbix/zabbix_server.conf ]; then
+        cp /etc/zabbix/zabbix_server.conf /etc/zabbix/zabbix_server.conf.backup.$(date +%Y%m%d_%H%M%S)
+        info "Sauvegarde de la configuration créée"
+    fi
     
     # Configuration du mot de passe de la base de données
     sed -i "s/^# DBPassword=.*/DBPassword=$ZABBIX_DB_PASSWORD/" /etc/zabbix/zabbix_server.conf
