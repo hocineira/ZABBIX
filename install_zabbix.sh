@@ -531,6 +531,9 @@ main() {
     check_root
     check_debian
     
+    # Configuration réseau
+    configure_static_network
+    
     # Configuration
     setup_configuration
     
@@ -548,9 +551,9 @@ main() {
     import_zabbix_schema
     configure_zabbix_server
     start_services
-    
-    # Vérification et affichage des informations
     verify_installation
+    
+    # Affichage des informations
     display_final_info
     
     log "Installation terminée !"
