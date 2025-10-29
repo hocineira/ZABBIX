@@ -9,6 +9,8 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
 ### Ajouté
 - Script d'installation automatisée initial pour Zabbix 7.4 sur Debian
+- **Configuration réseau avec IP statique, passerelle et DNS**
+- **Mise à jour complète du système avec vérification détaillée (apt update, upgrade, dist-upgrade)**
 - Installation automatique de MariaDB avec configuration de sécurité
 - Installation automatique d'Apache2 et PHP avec tous les modules requis
 - Création automatique de la base de données Zabbix
@@ -20,6 +22,14 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 - Fichier README.md détaillé
 - Licence MIT
 - Fichier .gitignore
+
+### Fonctionnalités réseau
+- **Détection automatique des interfaces réseau**
+- **Support Netplan (Debian 12+) et /etc/network/interfaces (Debian 11-)**
+- **Configuration IP statique avec masque de sous-réseau**
+- **Configuration de la passerelle par défaut**
+- **Configuration DNS (primaire et secondaire)**
+- **Sauvegarde automatique de la configuration réseau précédente**
 
 ### Sécurité
 - Sécurisation automatique de MariaDB
