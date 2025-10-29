@@ -280,7 +280,10 @@ update_system() {
 ################################################################################
 
 install_prerequisites() {
-    log "Étape 2/8: Installation d'Apache, PHP et des modules requis..."
+    log "Étape 2/9: Installation d'Apache, PHP et des modules requis..."
+    
+    # Installation de ipcalc pour les calculs réseau
+    DEBIAN_FRONTEND=noninteractive apt install -y ipcalc >> "$LOG_FILE" 2>&1 || warning "ipcalc non installé"
     
     DEBIAN_FRONTEND=noninteractive apt install -y \
         apache2 \
