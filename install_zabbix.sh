@@ -328,7 +328,7 @@ install_mariadb() {
 }
 
 secure_mariadb() {
-    log "Étape 4/8: Sécurisation de MariaDB..."
+    log "Étape 4/9: Sécurisation de MariaDB..."
     
     # Configuration automatique de la sécurité MariaDB
     mysql -u root <<-EOF >> "$LOG_FILE" 2>&1
