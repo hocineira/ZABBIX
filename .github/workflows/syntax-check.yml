@@ -1,0 +1,49 @@
+name: Script Syntax Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  syntax-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Check bash script syntax
+      run: |
+        bash -n install_zabbix.sh
+        echo "✓ Script syntax is valid"
+    
+    - name: Check for common issues
+      run: |
+        # Check for set -e
+        if grep -q "set -e" install_zabbix.sh; then
+          echo "✓ Error handling enabled (set -e)"
+        else
+          echo "⚠ Warning: set -e not found"
+        fi
+        
+        # Check for logging
+        if grep -q "LOG_FILE" install_zabbix.sh; then
+          echo "✓ Logging configured"
+        else
+          echo "⚠ Warning: No logging found"
+        fi
+        
+        # Check for functions
+        if grep -q "^[a-zA-Z_][a-zA-Z0-9_]*\(\)" install_zabbix.sh; then
+          echo "✓ Functions defined"
+        else
+          echo "⚠ Warning: No functions found"
+        fi
+    
+    - name: ShellCheck
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y shellcheck
+        shellcheck -x install_zabbix.sh || true
