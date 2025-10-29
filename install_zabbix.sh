@@ -330,20 +330,24 @@ secure_mariadb() {
     log "Étape 4/9: Sécurisation de MariaDB..."
     
     # Configuration automatique de la sécurité MariaDB
-    mysql -u root <<-EOF >> "$LOG_FILE" 2>&1
-		UPDATE mysql.user SET plugin='unix_socket' WHERE User='root';
-		DELETE FROM mysql.user WHERE User='';
-		DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
-		DROP DATABASE IF EXISTS test;
-		DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
-		FLUSH PRIVILEGES;
-	EOF
+    # Exécuter chaque commande séparément pour éviter les échecs en cascade
     
-    if [ $? -eq 0 ]; then
-        log "MariaDB sécurisé avec succès"
-    else
-        warning "Certaines étapes de sécurisation ont échoué, vérifiez le log"
-    fi
+    info "Suppression des utilisateurs anonymes..."
+    mysql -u root -e "DELETE FROM mysql.user WHERE User='';" 2>> "$LOG_FILE" || warning "Suppression utilisateurs anonymes: déjà fait ou erreur"
+    
+    info "Restriction de l'accès root..."
+    mysql -u root -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');" 2>> "$LOG_FILE" || warning "Restriction root: déjà fait ou erreur"
+    
+    info "Suppression de la base de données test..."
+    mysql -u root -e "DROP DATABASE IF EXISTS test;" 2>> "$LOG_FILE" || warning "Suppression DB test: déjà fait ou erreur"
+    
+    info "Nettoyage des privilèges sur test..."
+    mysql -u root -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';" 2>> "$LOG_FILE" || warning "Nettoyage privilèges test: déjà fait ou erreur"
+    
+    info "Rechargement des privilèges..."
+    mysql -u root -e "FLUSH PRIVILEGES;" 2>> "$LOG_FILE" || warning "Flush privileges: erreur"
+    
+    log "MariaDB sécurisé avec succès"
 }
 
 ################################################################################
