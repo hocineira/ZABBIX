@@ -316,7 +316,7 @@ install_prerequisites() {
 ################################################################################
 
 install_mariadb() {
-    log "Étape 3/8: Installation de MariaDB..."
+    log "Étape 3/9: Installation de MariaDB..."
     
     DEBIAN_FRONTEND=noninteractive apt install -y mariadb-server >> "$LOG_FILE" 2>&1 || error "Échec de l'installation de MariaDB"
     
