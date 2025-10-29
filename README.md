@@ -23,7 +23,9 @@ Script d'installation automatisée et complète de **Zabbix 7.4** sur systèmes 
 
 ## ✨ Fonctionnalités
 
+- ✅ **Configuration réseau automatique** (IP statique, passerelle, DNS)
 - ✅ Installation complète et automatisée de Zabbix 7.4
+- ✅ **Mise à jour complète du système** avec vérification détaillée
 - ✅ Configuration de MariaDB avec sécurisation automatique
 - ✅ Installation et configuration d'Apache2 et PHP avec tous les modules requis
 - ✅ Création et configuration de la base de données Zabbix
