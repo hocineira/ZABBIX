@@ -83,9 +83,23 @@ curl -fsSL https://raw.githubusercontent.com/votre-username/zabbix-auto-install/
 sudo ./install_zabbix.sh
 ```
 
-Le script vous demandera:
-1. **Mot de passe pour la base de données Zabbix**: Entrez un mot de passe fort et sécurisé
-2. **Confirmation du mot de passe**: Confirmez le mot de passe
+Le script vous guidera à travers plusieurs étapes de configuration :
+
+#### 1. Configuration réseau (optionnelle)
+- **Choix de l'interface réseau** (si plusieurs interfaces disponibles)
+- **Affichage de la configuration actuelle** (IP, passerelle, DNS)
+- **Option de configuration IP statique** :
+  - Adresse IP statique (ex: 192.168.1.100)
+  - Masque de sous-réseau (ex: 255.255.255.0 ou 24)
+  - Passerelle (ex: 192.168.1.1)
+  - DNS primaire (ex: 8.8.8.8)
+  - DNS secondaire [optionnel] (ex: 8.8.4.4)
+
+> 💡 **Note**: La configuration réseau est recommandée pour les serveurs de production qui nécessitent une IP statique.
+
+#### 2. Configuration de la base de données
+- **Mot de passe pour la base de données Zabbix**: Entrez un mot de passe fort et sécurisé
+- **Confirmation du mot de passe**: Confirmez le mot de passe
 
 Ensuite, le script s'occupe de tout automatiquement !
 
@@ -99,11 +113,27 @@ $ sudo ./install_zabbix.sh
 ═══════════════════════════════════════════════════════════════════════════════
 
 [2025-01-XX XX:XX:XX] Système Debian détecté: 13
+
+Configuration réseau actuelle:
+    inet 192.168.1.50/24 brd 192.168.1.255 scope global eth0
+Passerelle actuelle:
+default via 192.168.1.1 dev eth0
+DNS actuels:
+nameserver 192.168.1.1
+
+Voulez-vous configurer une IP statique? (o/N): o
+Adresse IP statique (ex: 192.168.1.100): 192.168.1.100
+Masque de sous-réseau (ex: 255.255.255.0 ou 24): 24
+Passerelle (ex: 192.168.1.1): 192.168.1.1
+DNS primaire (ex: 8.8.8.8): 8.8.8.8
+DNS secondaire (ex: 8.8.4.4) [optionnel]: 8.8.4.4
+
 Entrez le mot de passe pour l'utilisateur 'zabbix' de la base de données: 
 Confirmez le mot de passe: 
 
 [2025-01-XX XX:XX:XX] Début de l'installation...
-[2025-01-XX XX:XX:XX] Étape 1/8: Mise à jour du système...
+[2025-01-XX XX:XX:XX] Étape 1/9: Vérification et mise à jour complète du système...
+[2025-01-XX XX:XX:XX] Nombre de paquets à mettre à jour: 42
 [2025-01-XX XX:XX:XX] Système mis à jour avec succès
 ...
 ```
