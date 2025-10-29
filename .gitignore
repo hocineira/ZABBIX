@@ -28,3 +28,7 @@ Thumbs.db
 # Configuration files with sensitive data
 *.conf.local
 *.env
+-e 
+# Environment files
+*.env
+*.env.*
