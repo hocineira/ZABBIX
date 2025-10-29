@@ -357,19 +357,38 @@ secure_mariadb() {
 create_zabbix_database() {
     log "Étape 5/9: Création de la base de données Zabbix..."
     
-    mysql -u root <<-EOF >> "$LOG_FILE" 2>&1
-		CREATE DATABASE IF NOT EXISTS zabbix character set utf8mb4 collate utf8mb4_bin;
-		CREATE USER IF NOT EXISTS 'zabbix'@'localhost' IDENTIFIED BY '$ZABBIX_DB_PASSWORD';
-		GRANT ALL PRIVILEGES ON zabbix.* TO 'zabbix'@'localhost';
-		SET GLOBAL log_bin_trust_function_creators = 1;
-		FLUSH PRIVILEGES;
-	EOF
-    
-    if [ $? -eq 0 ]; then
-        log "Base de données Zabbix créée avec succès"
-    else
+    # Création de la base de données
+    info "Création de la base de données zabbix..."
+    mysql -u root -e "CREATE DATABASE IF NOT EXISTS zabbix character set utf8mb4 collate utf8mb4_bin;" 2>> "$LOG_FILE"
+    if [ $? -ne 0 ]; then
         error "Échec de la création de la base de données Zabbix"
     fi
+    
+    # Création de l'utilisateur (si existe déjà, on l'ignore)
+    info "Création de l'utilisateur zabbix..."
+    mysql -u root -e "CREATE USER IF NOT EXISTS 'zabbix'@'localhost' IDENTIFIED BY '$ZABBIX_DB_PASSWORD';" 2>> "$LOG_FILE"
+    
+    # Si l'utilisateur existe déjà, mettre à jour le mot de passe
+    mysql -u root -e "ALTER USER 'zabbix'@'localhost' IDENTIFIED BY '$ZABBIX_DB_PASSWORD';" 2>> "$LOG_FILE" || warning "Utilisateur zabbix déjà existant, mot de passe mis à jour"
+    
+    # Attribution des privilèges
+    info "Attribution des privilèges..."
+    mysql -u root -e "GRANT ALL PRIVILEGES ON zabbix.* TO 'zabbix'@'localhost';" 2>> "$LOG_FILE"
+    if [ $? -ne 0 ]; then
+        error "Échec de l'attribution des privilèges"
+    fi
+    
+    # Configuration pour l'import
+    info "Configuration pour l'import de la base de données..."
+    mysql -u root -e "SET GLOBAL log_bin_trust_function_creators = 1;" 2>> "$LOG_FILE"
+    if [ $? -ne 0 ]; then
+        warning "Configuration log_bin_trust_function_creators échouée (peut-être déjà configuré)"
+    fi
+    
+    # Flush privileges
+    mysql -u root -e "FLUSH PRIVILEGES;" 2>> "$LOG_FILE"
+    
+    log "Base de données Zabbix créée avec succès"
 }
 
 ################################################################################
