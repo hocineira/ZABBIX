@@ -374,7 +374,7 @@ create_zabbix_database() {
 ################################################################################
 
 install_zabbix() {
-    log "Étape 6/8: Installation de Zabbix 7.4..."
+    log "Étape 6/9: Installation de Zabbix 7.4..."
     
     # Téléchargement du paquet de release Zabbix
     cd /tmp
