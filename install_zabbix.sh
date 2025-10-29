@@ -243,10 +243,36 @@ setup_configuration() {
 ################################################################################
 
 update_system() {
-    log "Étape 1/8: Mise à jour du système..."
+    log "Étape 1/9: Vérification et mise à jour complète du système..."
+    
+    info "Mise à jour de la liste des paquets..."
     apt update >> "$LOG_FILE" 2>&1 || error "Échec de la mise à jour du système"
-    apt upgrade -y >> "$LOG_FILE" 2>&1 || error "Échec de la mise à niveau du système"
+    
+    # Vérifier s'il y a des mises à jour disponibles
+    UPDATES=$(apt list --upgradable 2>/dev/null | grep -c upgradable || echo "0")
+    if [ "$UPDATES" -gt 1 ]; then
+        log "Nombre de paquets à mettre à jour: $((UPDATES-1))"
+    else
+        log "Système déjà à jour"
+    fi
+    
+    info "Application des mises à jour du système (cela peut prendre plusieurs minutes)..."
+    DEBIAN_FRONTEND=noninteractive apt upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" >> "$LOG_FILE" 2>&1 || error "Échec de la mise à niveau du système"
+    
+    info "Mise à jour complète (dist-upgrade)..."
+    DEBIAN_FRONTEND=noninteractive apt dist-upgrade -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" >> "$LOG_FILE" 2>&1 || warning "Dist-upgrade partiellement réussi"
+    
+    info "Nettoyage des paquets obsolètes..."
+    apt autoremove -y >> "$LOG_FILE" 2>&1
+    apt autoclean >> "$LOG_FILE" 2>&1
+    
     log "Système mis à jour avec succès"
+    
+    # Vérifier si un redémarrage est nécessaire
+    if [ -f /var/run/reboot-required ]; then
+        warning "Un redémarrage du système est recommandé après l'installation"
+        warning "Fichier /var/run/reboot-required détecté"
+    fi
 }
 
 ################################################################################
