@@ -174,8 +174,9 @@ apt update && apt upgrade -y && apt dist-upgrade -y
 - PHP 8.x et modules nécessaires:
   - php-curl, php-zip, php-gd, php-intl
   - php-mbstring, php-ldap, php-mysql
+  - php-memcache, php-pspell, php-tidy
+  - php-xmlrpc, php-xsl, php-cas, php-apcu
   - libapache2-mod-php
-  - Et bien d'autres...
 - ipcalc (pour les calculs réseau)
 
 ### 4. Installation et sécurisation de MariaDB
