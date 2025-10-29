@@ -435,7 +435,7 @@ configure_zabbix_server() {
 ################################################################################
 
 start_services() {
-    log "Étape 8/8: Démarrage et activation des services..."
+    log "Étape 8/9: Démarrage et activation des services..."
     
     # Redémarrage des services
     systemctl restart zabbix-server zabbix-agent apache2 >> "$LOG_FILE" 2>&1 || error "Échec du redémarrage des services"
