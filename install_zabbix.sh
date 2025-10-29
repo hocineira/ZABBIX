@@ -352,7 +352,7 @@ secure_mariadb() {
 ################################################################################
 
 create_zabbix_database() {
-    log "Étape 5/8: Création de la base de données Zabbix..."
+    log "Étape 5/9: Création de la base de données Zabbix..."
     
     mysql -u root <<-EOF >> "$LOG_FILE" 2>&1
 		CREATE DATABASE IF NOT EXISTS zabbix character set utf8mb4 collate utf8mb4_bin;
