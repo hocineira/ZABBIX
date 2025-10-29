@@ -33,6 +33,10 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
 ### Corrigé
 - **Retrait de php-imap** de la liste des dépendances (paquet problématique sur certaines versions de Debian)
+- **Sécurisation MariaDB robuste** : Commandes SQL exécutées séparément pour éviter les crashs
+- **Gestion d'erreurs améliorée** : Distinction entre erreurs critiques et warnings
+- **Idempotence** : Le script peut maintenant être réexécuté sans problème
+- **Création base de données** : Gestion du cas où l'utilisateur zabbix existe déjà
 
 ### Sécurité
 - Sécurisation automatique de MariaDB
